@@ -17,6 +17,7 @@ class VoiceControlCog(commands.Cog):
 
     @commands.command()
     async def leave(self, ctx):
+        await ctx.invoke(self.bot.get_command("stop"))
         if ctx.voice_client:
             await ctx.voice_client.disconnect()
             await ctx.send("已离开语音频道!")
@@ -35,10 +36,10 @@ class VoiceControlCog(commands.Cog):
             last_audio_task.cleanup()
         audio_task = await audio_task_queue.dequeue(ctx.guild.id)
         if audio_task is not None:
-            ctx.voice_client.play(discord.FFmpegOpusAudio(audio_task.resolve()), after=lambda e: self.bot.loop.create_task(self.clean_and_play_next(ctx, last_audio_task=audio_task)))
+            audio_volume = audio_task.get_volume()
+            volume_control_option = f'-vn -filter:a "volume={audio_volume:.2f}"'
+            ctx.voice_client.play(discord.FFmpegOpusAudio(audio_task.resolve(), options=volume_control_option), after=lambda e: self.bot.loop.create_task(self.clean_and_play_next(ctx, last_audio_task=audio_task)))
             await ctx.send("正在播放：" + str(audio_task))
-        else:
-            await ctx.send("播放完成！")
 
     @commands.command()
     async def skip(self, ctx):
@@ -65,9 +66,11 @@ class VoiceControlCog(commands.Cog):
 
     @commands.command()
     async def stop(self, ctx):
-        pass
+        if ctx.voice_client.is_playing():
+            ctx.voice_client.stop()
+            await audio_task_queue.clear(ctx.guild.id)
+            await ctx.send("停止播放。")
 
-    
 
 def setup(bot):
     bot.add_cog(MyCog(bot))

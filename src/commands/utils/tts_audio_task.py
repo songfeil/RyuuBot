@@ -18,4 +18,7 @@ class TtsAudioTask(object):
             os.remove(self.tmp_file_path)
 
     def __str__(self):
-        return "语音：" + self.text
+        return "（语音）" + self.text
+    
+    def get_volume(self):
+        return 1.0

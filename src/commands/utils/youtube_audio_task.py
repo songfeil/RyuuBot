@@ -7,9 +7,9 @@ class YoutubeAudioTask(object):
     yt_dl_options = {
         'format': 'bestaudio/best',
         'extractaudio': True,
-        'noplaylist': True,
         'keepvideo': False,
         "outtmpl": "tmp/%(title)s.%(ext)s",
+        "noplaylist": True,
         'quiet': True
     }
     ytdl = yt_dlp.YoutubeDL(yt_dl_options)
@@ -27,5 +27,8 @@ class YoutubeAudioTask(object):
         if os.path.exists(self.tmp_file_path):
             os.remove(self.tmp_file_path)
 
+    def get_volume(self):
+        return 0.25
+
     def __str__(self):
-        return "Youtube：" + self.url
+        return "（Youtube）" + self.url
